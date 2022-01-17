@@ -1,4 +1,4 @@
-import 'package:covid_tracker/models/world_state_model.dart';
+import 'package:covid_tracker/models/worldstates_model.dart';
 import 'package:covid_tracker/screens/countries_list.dart';
 import 'package:covid_tracker/services/state_services.dart';
 import 'package:flutter/cupertino.dart';
@@ -38,7 +38,7 @@ class _WorldStatesState extends State<WorldStates>
             SizedBox(
               height: MediaQuery.of(context).size.height * .01,
             ),
-            FutureBuilder<WorldStateModel>(
+            FutureBuilder<WorldStatesModel>(
                 future: stateServices.fetchWorldStatesRecords(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
