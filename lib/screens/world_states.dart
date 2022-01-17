@@ -1,4 +1,9 @@
+import 'package:covid_tracker/models/world_state_model.dart';
+import 'package:covid_tracker/screens/countries_list.dart';
+import 'package:covid_tracker/services/state_services.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pie_chart/pie_chart.dart';
 
 class WorldStates extends StatefulWidget {
@@ -11,7 +16,7 @@ class WorldStates extends StatefulWidget {
 class _WorldStatesState extends State<WorldStates>
     with TickerProviderStateMixin {
   late final AnimationController _controller =
-      AnimationController(vsync: this, duration: Duration(seconds: 3))
+      AnimationController(vsync: this, duration: Duration(seconds: 5))
         ..repeat();
 
   @override
@@ -22,6 +27,7 @@ class _WorldStatesState extends State<WorldStates>
 
   @override
   Widget build(BuildContext context) {
+    StateServices stateServices = StateServices();
     return Scaffold(
       appBar: AppBar(title: Text('CovidTrack')),
       body: SafeArea(
@@ -32,46 +38,95 @@ class _WorldStatesState extends State<WorldStates>
             SizedBox(
               height: MediaQuery.of(context).size.height * .01,
             ),
-            PieChart(
-              dataMap: const {
-                "Total": 20.0,
-                "Recover": 15.0,
-                "Death": 5.2,
-              },
-              animationDuration: const Duration(
-                milliseconds: 120,
-              ),
-              chartRadius: MediaQuery.of(context).size.width / 3.2,
-              legendOptions:
-                  const LegendOptions(legendPosition: LegendPosition.left),
-              chartType: ChartType.ring,
-              colorList: const [
-                Color(0xff4285F4),
-                Color(0xff1aa260),
-                Color(0xffde5426),
-              ],
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                  vertical: MediaQuery.of(context).size.height * .06),
-              child: Card(
-                child: Column(children: [
-                  ResuableRow(title: 'Total', value: '200'),
-                  ResuableRow(title: 'Recover', value: '50'),
-                  ResuableRow(title: 'Death', value: '2'),
-                ]),
-              ),
-            ),
-            Container(
-              height: 50,
-              decoration: BoxDecoration(
-                color: const Color(0xff1aa260),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Center(
-                child: Text('Track Countries'),
-              ),
-            ),
+            FutureBuilder<WorldStateModel>(
+                future: stateServices.fetchWorldStatesRecords(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Expanded(
+                      flex: 1,
+                      child: SpinKitFadingCircle(
+                        color: Colors.white,
+                        size: 50,
+                        controller: _controller,
+                      ),
+                    );
+                  } else {
+                    return Column(
+                      children: [
+                        PieChart(
+                          dataMap: {
+                            "Total":
+                                double.parse(snapshot.data!.cases.toString()),
+                            "Recover": double.parse(
+                                snapshot.data!.recovered.toString()),
+                            "Death":
+                                double.parse(snapshot.data!.deaths.toString()),
+                          },
+                          animationDuration: const Duration(
+                            milliseconds: 120,
+                          ),
+                          chartValuesOptions: const ChartValuesOptions(
+                              showChartValuesInPercentage: true),
+                          chartRadius: MediaQuery.of(context).size.width / 3.2,
+                          legendOptions: const LegendOptions(
+                              legendPosition: LegendPosition.left),
+                          chartType: ChartType.ring,
+                          colorList: const [
+                            Color(0xff4285F4),
+                            Color(0xff1aa260),
+                            Color(0xffde5426),
+                          ],
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                              vertical:
+                                  MediaQuery.of(context).size.height * .04),
+                          child: Card(
+                            child: Column(children: [
+                              ResuableRow(
+                                  title: 'Total',
+                                  value: snapshot.data!.cases.toString()),
+                              ResuableRow(
+                                  title: 'Recover',
+                                  value: snapshot.data!.recovered.toString()),
+                              ResuableRow(
+                                  title: 'Death',
+                                  value: snapshot.data!.deaths.toString()),
+                              ResuableRow(
+                                  title: 'Today Cases',
+                                  value: snapshot.data!.todayCases.toString()),
+                              ResuableRow(
+                                  title: 'Today Recovered',
+                                  value:
+                                      snapshot.data!.todayRecovered.toString()),
+                              ResuableRow(
+                                  title: 'Today Deaths',
+                                  value: snapshot.data!.todayDeaths.toString()),
+                            ]),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => CountriesList()));
+                          },
+                          child: Container(
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: const Color(0xff1aa260),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Center(
+                              child: Text('Track Countries',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                }),
           ],
         ),
       )),
