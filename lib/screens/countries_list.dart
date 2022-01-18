@@ -1,4 +1,5 @@
 import 'package:covid_tracker/models/countries_list_model.dart';
+import 'package:covid_tracker/screens/detail_screen.dart';
 import 'package:covid_tracker/services/state_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -31,7 +32,7 @@ class _CountriesListState extends State<CountriesList>
               child: TextFormField(
                 controller: searchController,
                 decoration: InputDecoration(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 20),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(50.0),
                   ),
@@ -43,7 +44,7 @@ class _CountriesListState extends State<CountriesList>
                             searchController.text = "";
                             setState(() {});
                           },
-                          child: Icon(Icons.clear)),
+                          child: const Icon(Icons.clear)),
                 ),
                 onChanged: (value) {
                   setState(() {});
@@ -54,7 +55,6 @@ class _CountriesListState extends State<CountriesList>
               child: FutureBuilder(
                   future: services.fetchWorldCountriesRecords(),
                   builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-                    print(snapshot);
                     if (!snapshot.hasData) {
                       return ListView.builder(
                         itemCount: 4,
@@ -96,7 +96,30 @@ class _CountriesListState extends State<CountriesList>
                               return Column(
                                 children: [
                                   InkWell(
-                                    onTap: () {},
+                                    onTap: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => DetailScreen(
+                                                  name: snapshot.data![index]
+                                                      ['country'],
+                                                  image: snapshot.data![index]
+                                                      ['countryInfo']['flag'],
+                                                  totalCases: snapshot.data![index]
+                                                      ['cases'],
+                                                  active: snapshot.data![index]
+                                                      ['active'],
+                                                  critical: snapshot.data![index]
+                                                      ['critical'],
+                                                  test: snapshot.data![index]
+                                                      ['tests'],
+                                                  todayRecovered:
+                                                      snapshot.data![index]
+                                                          ['todayRecovered'],
+                                                  totalDeaths: snapshot.data![index]
+                                                      ['deaths'],
+                                                  totalRecovered: snapshot.data![index]['recovered'])));
+                                    },
                                     child: ListTile(
                                       leading: Image(
                                         height: 50,
@@ -112,7 +135,7 @@ class _CountriesListState extends State<CountriesList>
                                               .toString()),
                                     ),
                                   ),
-                                  Divider()
+                                  const Divider(),
                                 ],
                               );
                             } else if (name.toLowerCase().contains(
